@@ -29,11 +29,11 @@ def worker(email, queue):
     stats = stathat.StatHat(email)
 
     while True:
-        command, key, value = queue.get()
+        command, key, value, timestamp = queue.get()
         if command == 'value':
-            stats.value(key, value)
+            stats.value(key, value, timestamp)
         if command == 'count':
-            stats.count(key, value)
+            stats.count(key, value, timestamp)
         queue.task_done()
 
 
@@ -45,8 +45,10 @@ class StatHat(object):
         thread.daemon = True
         thread.start()
 
-    def value(self, key, value):
-        self.queue.put(('value', key, value))
+    # optional timestamp (unix seconds since epoch)
+    def value(self, key, value, timestamp=None):
+        self.queue.put(('value', key, value, timestamp))
 
-    def count(self, key, count):
-        self.queue.put(('count', key, count))
+    # optional timestamp (unix seconds since epoch)
+    def count(self, key, count, timestamp=None):
+        self.queue.put(('count', key, count, timestamp))
